@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package proto;
+
+service Achmed {
+	rpc GetCertificate(ClientHelloInfo) returns (Certificate) {}
+}
+
+message ClientHelloInfo {
+	repeated uint32 ciphersuites = 1;
+	string servername = 2;
+	repeated uint32 supportedcurves = 3;
+	bytes supportedpoints = 4;
+}
+
+// Certificate is a concatentation of a private key PEM block followed by certificate pem blocks.
+message Certificate {
+	bytes pem = 1;
+}
+
