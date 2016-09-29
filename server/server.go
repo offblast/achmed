@@ -6,28 +6,30 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"log"
 
+	"golang.org/x/crypto/acme"
+	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"rsc.io/letsencrypt"
 
 	"github.com/offblast/achmed/proto"
 )
 
 type AchmedServer struct {
-	m *letsencrypt.Manager
+	m *autocert.Manager
 }
 
-func New(email string) (*AchmedServer, error) {
-	m := new(letsencrypt.Manager)
-	if err := m.CacheFile("letsencrypt.cache"); err != nil {
-		return nil, err
-	}
-
-	if !m.Registered() {
-		if err := m.Register(email, nil); err != nil {
-			return nil, err
-		}
+// New creates a new AchmedServer.
+//
+// See https://godoc.org/golang.org/x/crypto/acme/autocert#Manager for argument details.
+func New(email string, cache autocert.Cache, client *acme.Client, hostpolicy autocert.HostPolicy) (*AchmedServer, error) {
+	m := &autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		Cache:      cache,
+		HostPolicy: hostpolicy,
+		Client:     client,
+		Email:      email,
 	}
 
 	return &AchmedServer{m}, nil
@@ -37,6 +39,7 @@ func (a *AchmedServer) GetCertificate(ctx context.Context, clientHello *proto.Cl
 	chi := proto.ProtoToClientHelloInfo(clientHello)
 	cert, err := a.m.GetCertificate(chi)
 	if err != nil {
+		log.Printf("achmed: failed to get certificate for %q: %v", chi.ServerName, err)
 		return nil, err
 	}
 
