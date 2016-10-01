@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: achmed
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: achmed
+    spec:
+      containers:
+      - name: achmed
+        image: quay.io/mischief/achmed
+        args: ["-acme-email", "$(ACHMED_EMAIL)", "-cache", "etcd", "-etcd", "http://$(ETCD_CLUSTER_SERVICE_HOST):$(ETCD_CLUSTER_SERVICE_PORT)", "-acme-key", "/etc/achmed/acme.key", "-cryptcache", "-cryptpub", "/etc/achmed/achmed-pub.gpg", "-cryptsec", "/etc/achmed/achmed-sec.gpg"]
+        ports:
+        - containerPort: 7654
+        volumeMounts:
+          - name: etc-achmed
+            mountPath: "/etc/achmed"
+        env:
+          - name: ACHMED_EMAIL
+            valueFrom:
+              configMapKeyRef:
+                name: achmed-config
+                key: achmed.email
+      volumes:
+        - name: etc-achmed
+          secret:
+            secretName: achmed
+

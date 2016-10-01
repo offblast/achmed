@@ -23,7 +23,7 @@ Expire-Date: 0
 
 test -e secrets/acme.key || openssl ecparam -out secrets/acme.key -name prime256v1 -genkey || die "unable to create acme secret"
 
-test -e secrets/secrets.yaml || cat > secrets/secrets.yaml <<EOF
+test -e manifests/0-secret.yaml || cat > manifests/0-secret.yaml <<EOF
 apiVersion: v1
 kind: Secret
 metadata:
@@ -33,4 +33,6 @@ data:
   achmed-pub.gpg: $(base64 -w 0 < secrets/achmed-pub.gpg)
   achmed-sec.gpg: $(base64 -w 0 < secrets/achmed-sec.gpg)
 EOF
+
+touch manifests/0-secret.yaml
 

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: achmed
+spec:
+  selector:
+    app: achmed
+  ports:
+    - port: 7654
+      targetPort: 7654
+
